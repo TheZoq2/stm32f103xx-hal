@@ -44,6 +44,9 @@ extern crate embedded_hal as hal;
 extern crate nb;
 pub extern crate stm32f103xx;
 
+#[cfg(feature = "time_units")]
+extern crate embedded_hal_time;
+
 pub mod afio;
 pub mod bb;
 pub mod delay;
