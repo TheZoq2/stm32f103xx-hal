@@ -14,6 +14,9 @@ use crate::time::Hertz;
 #[cfg(feature = "time_units")]
 use embedded_hal_time::{RealCountDown, Microsecond, Millisecond, Second};
 
+#[cfg(feature = "time_units")]
+use embedded_hal_time::{RealCountDown, Microsecond, Millisecond, Second};
+
 /// Interrupt events
 pub enum Event {
     /// Timer timed out / count down ended

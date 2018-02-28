@@ -20,6 +20,8 @@ cortex-m-rt = "0.6.5"
 default-features = false
 version = "1.0.2"
 
+embedded-hal-time = {path = "../embed/embedded-hal-time", optional=true}
+
 [dependencies.cast]
 default-features = false
 version = "0.2.2"
@@ -78,7 +80,10 @@ version = "0.11.0"
 default = ["stm32f103"]
 doc = []
 rt = ["stm32f103xx/rt"]
+<<<<<<< HEAD
 stm32f103 = []
+=======
+>>>>>>> Implement embedded-hal-time
 time_units = ["embedded-hal-time"]
 
 [profile.dev]
