@@ -13,6 +13,7 @@ version = "0.1.0"
 stm32f103xx = "0.11.0"
 cortex-m = "0.5.7"
 nb = "0.1.1"
+embedded-hal-time = {path = "../embed/embedded-hal-time", optional=true}
 cortex-m-rt = "0.6.5"
 
 [dependencies.void]
@@ -78,6 +79,7 @@ default = ["stm32f103"]
 doc = []
 rt = ["stm32f103xx/rt"]
 stm32f103 = []
+time_units = ["embedded-hal-time"]
 
 [profile.dev]
 incremental = false
