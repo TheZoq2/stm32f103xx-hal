@@ -209,6 +209,7 @@ macro_rules! hal {
                 }
             }
 
+            #[cfg(feature = "time_units")]
             impl RealCountDown<Millisecond> for Timer<$TIMX> {
                 fn start_real(&mut self, timeout: Millisecond) {
                     // pause
@@ -231,6 +232,7 @@ macro_rules! hal {
                 }
             }
 
+            #[cfg(feature = "time_units")]
             impl RealCountDown<Second> for Timer<$TIMX> {
                 fn start_real(&mut self, timeout: Second) {
                     // pause
