@@ -60,6 +60,9 @@ macro_rules! gpio {
                 // OpenDrain,
                 Output,
                 // PullDown, PullUp,
+                PullDown,
+                PullUp,
+                // Push pull
                 PushPull,
             };
 
@@ -206,47 +209,58 @@ macro_rules! gpio {
                         $PXi { _mode: PhantomData }
                     }
 
-                    // /// Configures the pin to operate as a pulled down input pin
-                    // pub fn into_pull_down_input(
-                    //     self,
-                    //     moder: &mut MODER,
-                    //     pupdr: &mut PUPDR,
-                    // ) -> $PXi<Input<PullDown>> {
-                    //     let offset = 2 * $i;
+                    /// Configures the pin to operate as a pulled down input pin
+                    pub fn into_pull_down_input(
+                        self,
+                        cr: &mut $CR
+                    ) -> $PXi<Input<PullDown>> {
+                        let offset = (4 * $i) % 32;
+                        // Pull-up/pull-down input
+                        let cnf = 0b10;
+                        // Input mode
+                        let mode = 0b00;
+                        let bits = (cnf << 2) | mode;
 
-                    //     // input mode
-                    //     moder
-                    //         .moder()
-                    //         .modify(|r, w| unsafe { w.bits(r.bits() & !(0b11 << offset)) });
+                        // input mode
+                        cr
+                            .cr()
+                            .modify(|r, w| unsafe {
+                                w.bits((r.bits() & !(0b1111 << offset)) | (bits << offset))
+                            });
 
-                    //     // pull-down
-                    //     pupdr.pupdr().modify(|r, w| unsafe {
-                    //         w.bits((r.bits() & !(0b11 << offset)) | (0b10 << offset))
-                    //     });
+                        // Set pin mode to pull down by writing a 0 in tne ODR register through bsrr;
+                        // NOTE(unsafe) atomic write to a stateless register
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << (16 + $i))) }
 
-                    //     $PXi { _mode: PhantomData }
-                    // }
 
-                    // /// Configures the pin to operate as a pulled up input pin
-                    // pub fn into_pull_up_input(
-                    //     self,
-                    //     moder: &mut MODER,
-                    //     pupdr: &mut PUPDR,
-                    // ) -> $PXi<Input<PullUp>> {
-                    //     let offset = 2 * $i;
+                        $PXi { _mode: PhantomData }
+                    }
 
-                    //     // input mode
-                    //     moder
-                    //         .moder()
-                    //         .modify(|r, w| unsafe { w.bits(r.bits() & !(0b11 << offset)) });
+                    /// Configures the pin to operate as a pulled up input pin
+                    pub fn into_pull_up_input(
+                        self,
+                        cr: &mut $CR
+                    ) -> $PXi<Input<PullUp>> {
+                        let offset = (4 * $i) % 32;
+                        // Pull-up/pull-down input
+                        let cnf = 0b10;
+                        // Input mode
+                        let mode = 0b00;
+                        let bits = (cnf << 2) | mode;
 
-                    //     // pull-up
-                    //     pupdr.pupdr().modify(|r, w| unsafe {
-                    //         w.bits((r.bits() & !(0b11 << offset)) | (0b01 << offset))
-                    //     });
+                        // input mode
+                        cr
+                            .cr()
+                            .modify(|r, w| unsafe {
+                                w.bits((r.bits() & !(0b1111 << offset)) | (bits << offset))
+                            });
 
-                    //     $PXi { _mode: PhantomData }
-                    // }
+                        // Set pin mode to pull down by writing a 0 in tne ODR register through bsrr;
+                        // NOTE(unsafe) atomic write to a stateless register
+                        unsafe { (*$GPIOX::ptr()).bsrr.write(|w| w.bits(1 << $i)) }
+
+                        $PXi { _mode: PhantomData }
+                    }
 
                     // /// Configures the pin to operate as an open drain output pin
                     // pub fn into_open_drain_output(
