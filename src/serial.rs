@@ -447,7 +447,7 @@ impl DmaChannel for Tx<USART3> {
 pub trait ReadDma<B>: DmaChannel
 where
     B: AsMut<[u8]>,
-    Self: core::marker::Sized,
+    Self: ::core::marker::Sized,
 {
     fn circ_read(self, chan: Self::Dma, buffer: &'static mut [B; 2]) -> CircBuffer<B, Self::Dma>;
     fn read_exact(
@@ -461,7 +461,7 @@ pub trait WriteDma<A, B>: DmaChannel
 where
     A: AsRef<[u8]>,
     B: Static<A>,
-    Self: core::marker::Sized,
+    Self: ::core::marker::Sized,
 {
     fn write_all(self, chan: Self::Dma, buffer: B) -> Transfer<R, B, Self::Dma, Self>;
 }
