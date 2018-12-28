@@ -44,12 +44,6 @@ pub use stm32f103xx;
 #[cfg(feature="stm32f103")]
 pub use stm32f103xx as device;
 
-#[cfg(feature = "time_units")]
-extern crate embedded_hal_time;
-
-#[cfg(feature = "time_units")]
-extern crate embedded_hal_time;
-
 pub mod afio;
 pub mod bb;
 pub mod delay;

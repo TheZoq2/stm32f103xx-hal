@@ -80,10 +80,7 @@ version = "0.11.0"
 default = ["stm32f103"]
 doc = []
 rt = ["stm32f103xx/rt"]
-<<<<<<< HEAD
 stm32f103 = []
-=======
->>>>>>> Implement embedded-hal-time
 time_units = ["embedded-hal-time"]
 
 [profile.dev]
