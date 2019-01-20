@@ -46,6 +46,26 @@ pub struct Alternate<MODE> {
     _mode: PhantomData<MODE>,
 }
 
+/// Mode that a pin in debug mode enters after exiting that mode
+pub struct Unknown;
+/// Debug mode (type state)
+pub struct Debug;
+
+/**
+  All type states that are not Debug. Used when implementing the into_functions
+*/
+pub trait NotDebugMode {}
+impl NotDebugMode for Floating {}
+impl NotDebugMode for PullDown {}
+impl NotDebugMode for PullUp {}
+impl NotDebugMode for PushPull {}
+impl NotDebugMode for OpenDrain {}
+impl NotDebugMode for Analog {}
+impl NotDebugMode for Unknown {}
+impl<MODE> NotDebugMode for Input<MODE> {}
+impl<MODE> NotDebugMode for Output<MODE> {}
+impl<MODE> NotDebugMode for Alternate<MODE> {}
+
 macro_rules! gpio {
     ($GPIOX:ident, $gpiox:ident, $gpioy:ident, $iopxenr:ident, $iopxrst:ident, $PXx:ident, [
         $($PXi:ident: ($pxi:ident, $i:expr, $MODE:ty, $CR:ident),)+
@@ -56,6 +76,7 @@ macro_rules! gpio {
 
             use crate::hal::digital::{InputPin, OutputPin, StatefulOutputPin, toggleable};
             use crate::device::{$gpioy, $GPIOX};
+            use crate::afio::JtagDisabledToken;
 
             use crate::rcc::APB2;
             use super::{
@@ -66,6 +87,9 @@ macro_rules! gpio {
                 PullUp,
                 PushPull,
                 Analog,
+                Debug,
+                NotDebugMode,
+                Unknown
             };
 
             /// GPIO parts
@@ -181,7 +205,7 @@ macro_rules! gpio {
                     _mode: PhantomData<MODE>,
                 }
 
-                impl<MODE> $PXi<MODE> {
+                impl<MODE> $PXi<MODE> where MODE: NotDebugMode {
                     /// Configures the pin to operate as an alternate function push pull output pin
                     pub fn into_alternate_push_pull(
                         self,
@@ -361,7 +385,7 @@ macro_rules! gpio {
                     }
                 }
 
-                impl<MODE> $PXi<MODE> {
+                impl<MODE> $PXi<MODE> where MODE: NotDebugMode {
                     /// Erases the pin number from the type
                     ///
                     /// This is useful when you want to collect the pins into an array where you
@@ -443,6 +467,28 @@ macro_rules! gpio {
                         unsafe { (*$GPIOX::ptr()).idr.read().bits() & (1 << $i) == 0 }
                     }
                 }
+
+                impl $PXi<Debug> {
+                    /**
+                        Takes the pin out of debug mode and gives it an `Unknown` mode.
+                        This can then be converted to another useful mode.
+
+                        ```rust
+                        let mut gpiob = p.GPIOB.split(&mut rcc.apb2);
+                        let mut afio = p.AFIO.constrain(&mut rcc.apb2);
+
+                        // Disable the jtag and keep the token for unlocking the pin
+                        let token = afio.mapr.disable_jtag();
+
+                        gpiob.pb4
+                            .exit_debug_mode(&token)
+                            .into_push_pull_output(&mut gpiob.crl)
+                        ```
+                    */
+                    pub fn exit_debug_mode(self, _token: &JtagDisabledToken) -> $PXi<Unknown> {
+                        $PXi {_mode: PhantomData }
+                    }
+                }
             )+
         }
     }
@@ -464,15 +510,15 @@ gpio!(GPIOA, gpioa, gpioa, iopaen, ioparst, PAx, [
     PA12: (pa12, 12, Input<Floating>, CRH),
     PA13: (pa13, 13, Input<Floating>, CRH),
     PA14: (pa14, 14, Input<Floating>, CRH),
-    PA15: (pa15, 15, Input<Floating>, CRH),
+    PA15: (pa15, 15, Debug, CRH),
 ]);
 
 gpio!(GPIOB, gpiob, gpioa, iopben, iopbrst, PBx, [
     PB0: (pb0, 0, Input<Floating>, CRL),
     PB1: (pb1, 1, Input<Floating>, CRL),
     PB2: (pb2, 2, Input<Floating>, CRL),
-    PB3: (pb3, 3, Input<Floating>, CRL),
-    PB4: (pb4, 4, Input<Floating>, CRL),
+    PB3: (pb3, 3, Debug, CRL),
+    PB4: (pb4, 4, Debug, CRL),
     PB5: (pb5, 5, Input<Floating>, CRL),
     PB6: (pb6, 6, Input<Floating>, CRL),
     PB7: (pb7, 7, Input<Floating>, CRL),

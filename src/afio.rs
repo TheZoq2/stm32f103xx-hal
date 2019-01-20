@@ -48,14 +48,25 @@ pub struct MAPR {
     _0: (),
 }
 
+/// Token indicating that the JTAG has been disabled
+pub struct JtagDisabledToken {_0: ()}
+
 impl MAPR {
     pub fn mapr(&mut self) -> &afio::MAPR {
         unsafe { &(*AFIO::ptr()).mapr }
     }
 
-    /// Disables the JTAG to free up pb3, pb4 and pa15 for normal use
-    pub fn disable_jtag(&mut self) {
-        self.mapr().modify(|_, w| unsafe{w.swj_cfg().bits(0b010)})
+    /**
+      Disables the JTAG to free up pb3, pb4 and pa15 for normal use. The
+      returned token object can be used to unlock the pins.
+    */
+    // NOTE: This abstraction breaks if a function to re-enable the jtag
+    // is added. In that case, the lifetime of an unlocked pin would need
+    // to be limited to that of the token
+    pub fn disable_jtag(&mut self) -> JtagDisabledToken {
+        self.mapr().modify(|_, w| unsafe{w.swj_cfg().bits(0b010)});
+
+        JtagDisabledToken {_0: ()}
     }
 }
 

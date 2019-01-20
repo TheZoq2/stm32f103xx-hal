@@ -21,9 +21,10 @@ fn main() -> ! {
     let mut gpiob = p.GPIOB.split(&mut rcc.apb2);
     let mut afio = p.AFIO.constrain(&mut rcc.apb2);
 
-    afio.mapr.disable_jtag();
+    // Disable the jtag and keep the token for unlocking the pin
+    let token = afio.mapr.disable_jtag();
 
-    gpiob.pb4.into_push_pull_output(&mut gpiob.crl).set_low();
+    gpiob.pb4.exit_debug_mode(&token).into_push_pull_output(&mut gpiob.crl).set_low();
 
     loop {}
 }
